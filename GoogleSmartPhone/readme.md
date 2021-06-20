@@ -1,5 +1,36 @@
 # ReadMe
+[toc]
+
+
+
+# Pipeline
+
+데이터 전처리 모듈로, 모든 데이터를 하나의 피클로 모아주는 기능을 수행함. 이 첼린지에서는 `baseline`데이터와 `derived`데이터, 그리고 `GnssLog`데이터를 포함한다. 또한 학습 데이터의 경우에는 `ground_truth`또한 포함한다.
+
+`Pipeline`에서는 `Wrangling`과 `EDA`를 수행한다.
+
+
+
+# Baseline
+
+GoogleSmartphoneDecimalChallenge(GSDC) 데이터를 불러오고, 처리하여, 제출파일을 생성하는 과정을 하는 가장 기본적인 뼈대의 코드이다. 또한 학습 과정에서 가장 좋은 학습 데이터에 대한 checkpoint를 생성해주고, 매 학습마다 하이퍼 파라미터와 학습 결과등을 저장하여 언제든 재사용 가능하게 만든다.
+
+
+
+# Modelling
+
+
+
+
+
+
+
+# Must Remove
+
+
+
 ## Baseline
+
 기본적인 학습을 위한 베이스 라인 코드
 가장 간단하게 MLP형태로 작성
 
