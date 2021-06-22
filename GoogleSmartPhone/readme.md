@@ -11,13 +11,28 @@
 
 
 
-# Baseline
+# Deeplearning
+
+## Baseline
 
 GoogleSmartphoneDecimalChallenge(GSDC) 데이터를 불러오고, 처리하여, 제출파일을 생성하는 과정을 하는 가장 기본적인 뼈대의 코드이다. 또한 학습 과정에서 가장 좋은 학습 데이터에 대한 checkpoint를 생성해주고, 매 학습마다 하이퍼 파라미터와 학습 결과등을 저장하여 언제든 재사용 가능하게 만든다.
 
 
 
-# Modelling
+## Modeling
+
+
+
+
+
+# KalmanFilter
+
+아얘 접근법을 달리해서 칼만필터 기반으로 점수를 올려본 다음 생각해보자.
+
+coordinate frame을 어떻게 가져가야 할까?
+
+1. ENU-Frame: Local 좌표계로 변환해 잘 알고 있는 dynamics로 모델링 쌉가능
+2. WGS84(Longtitude, Latitude?): 변환할 필요는 없지만, 연산이 복잡할 것 같음
 
 
 
