@@ -19,7 +19,9 @@ GoogleSmartphoneDecimalChallenge(GSDC) 데이터를 불러오고, 처리하여, 
 
 ### 트라이
 
-3000개짜리 임시 버퍼에 두고 3000 X features 의 크기를 갖는 데이터 처리하드시 해보면 될까?
+~~3000개짜리 임시 버퍼에 두고 3000 X features 의 크기를 갖는 데이터 처리하드시 해보면 될까?~~
+
+Feature normalization + [논문](https://arxiv.org/pdf/1805.03368.pdf) 참고
 
 
 
