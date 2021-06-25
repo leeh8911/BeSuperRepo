@@ -9,6 +9,16 @@
 
 `Pipeline`에서는 `Wrangling`과 `EDA`를 수행한다.
 
+파이프라인을 나누어서 독립적으로 만들 필요가 있음
+
+1. GatherData: 데이터를 수집(time sync를 고려해서)
+2. AssessAndCleanData(수집된데이터의 문제점들을 파악하고, 수정)
+3. FeatureExtract(학습에 도움 될 만한 feature를 추출함)
+4. ModelBuildAndFit(학습 + 추론)
+5. Visualize(결과에 대한 시각화)
+
+
+
 
 
 # Deeplearning
@@ -22,6 +32,10 @@ GoogleSmartphoneDecimalChallenge(GSDC) 데이터를 불러오고, 처리하여, 
 ~~3000개짜리 임시 버퍼에 두고 3000 X features 의 크기를 갖는 데이터 처리하드시 해보면 될까?~~
 
 Feature normalization + [논문](https://arxiv.org/pdf/1805.03368.pdf) 참고
+
+[sklearn normalization](https://scikit-learn.org/stable/auto_examples/preprocessing/plot_all_scaling.html#powertransformer)
+
+
 
 
 
