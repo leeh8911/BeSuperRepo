@@ -15,6 +15,8 @@ import plotly.express as px
 from multiprocessing import Pool
 import multiprocessing as multi
 
+split_charater = "\\"
+
 def ground_truth_file_open(path):
     _columns = ['latDeg', 'lngDeg', 'heightAboveWgs84EllipsoidM']
     _df = pd.read_csv(path)    
@@ -32,6 +34,7 @@ def gnsslog_file_open(path):
     return _dict
 
 def gnss_log_to_dataframes(path):
+    (collectionName, phoneName) = path.split(split_charater)[-3:-1]
     gnss_section_names = {'Raw','UncalAccel', 'UncalGyro', 'UncalMag', 'Fix', 'Status', 'OrientationDeg'}
     with open(path) as f_open:
         datalines = f_open.readlines()
@@ -55,6 +58,8 @@ def gnss_log_to_dataframes(path):
     results = dict()
     for k, v in datas.items():
         results[k] = pd.DataFrame(v, columns=gnss_map[k])
+        results[k]['collectionName'] = collectionName 
+        results[k]['phoneName'] = phoneName
     # pandas doesn't properly infer types from these lists by default
     for k, df in results.items():
         for col in df.columns:
