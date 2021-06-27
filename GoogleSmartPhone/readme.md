@@ -27,11 +27,11 @@
 
 ## TODO
 
-* TimeSync문제: `derived`데이터와 `gnsslog`의 `raw`테이블이 싱크가 맞지 않는다고 알려져 있음. 또한 `gnsslog`의 경우 baseline_train/test와 기준에 되는 시점의 변수 명이 맞지 않아 변환이 필요함
+* TimeSync문제: `derived`데이터와 `gnsslog`의 `raw`테이블이 싱크가 맞지 않는다고 알려져 있음. 또한 `gnsslog`의 경우 baseline_train/test와 기준에 되는 시점의 변수 명이 맞지 않아 변환이 필요함[링크](https://www.kaggle.com/gymf123/tips-notes-from-the-competition-hosts)
 * 데이터 로드시 메모리 문제: 특히 `gnsslog`데이터를 불러올 경우 row와 col이 많아서 메모리가 많이 필요하게 됨. 순차적으로 따로따로 로깅하는 부분이 필요할 것으로 보임
 * 병합시 변수명: 유사한 변수명이 많아 어디서 유래한 데이터인지 알기 어려운 경우가 많음. 유사한 변수명의 경우에는 구분 가능하도록 접미어를 붙이는 것이 필요해 보임
 
-# AssessAndCleanDAta
+# AssessAndCleanData
 
 # FeatureExtract
 
