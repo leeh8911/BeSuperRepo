@@ -1,6 +1,26 @@
 # ReadMe
 [toc]
 
+# 들어가며
+
+[Google Smartphone Decimeter Challenge](https://www.kaggle.com/c/google-smartphone-decimeter-challenge)를 준비하며 만든 프로젝트 입니다. 약 11GB가량의 데이터를 다뤄야 하기 때문에 **github repository**에는 데이터를 포함하지는 않았습니다. 데이터는 다음 [링크](https://www.kaggle.com/c/google-smartphone-decimeter-challenge/data)를 통해 받을 수 있고, 압축 파일 속에는 `metadata folder`, `test folder`, `train folder`, `baseline_locations_test.csv`, `baseline_locations_train.csv`, and `sample_submission.csv`가 포함되어 있습니다. 각 데이터들은 다음과 같은 위치에 위치해야 합니다.
+
+```bash
+├────GoogleSmartPhone
+│   ├────readme.md
+│   ├────code
+│   │   ├─...
+│   │   └─...
+│   └── input
+│       └────google-smartphone-decimeter-challenge
+│           ├────metadata
+│           ├────test
+│           ├────train
+│           ├────baseline_locations_test.csv
+│           ├────baseline_locations_train.csv
+│           └────sample_submission.csv
+```
+
 
 
 # Pipeline
