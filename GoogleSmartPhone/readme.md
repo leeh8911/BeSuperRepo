@@ -100,26 +100,9 @@ coordinate frame을 어떻게 가져가야 할까?
 
 
 
+# Note
 
+## 2021-07-04
 
-# Must Remove
+* ~~Status 데이터의 경우, one-hot encoding을 통해 변환해주고, cnn block(cnn + batch norm + res + pool)을 통과하거나 transformer를 통과하는 경우에는 inf or nan이 되어버림.~~ 데이터 변환을 잘못해서 그런 것이었음. 데이터 중간에 NaN데이터가 포함됨
 
-
-
-## Baseline
-
-기본적인 학습을 위한 베이스 라인 코드
-가장 간단하게 MLP형태로 작성
-
-## Pipeline
-데이터 가공 파이프라인(추후 파이썬 코드로 수정)
-모델에서 학습할 수 있도록 데이터들을 변환 가공해주는 역할을 수행함
-
-데이터들은 시계열 데이터에 가깝고, collectName과 phoneName단위로 그루핑 할 수 있을 것으로 보임
-따라서 동일한 collectName, phoneName에서는 i번째 데이터 추정을 위해 [i - WINDOW_SIZE, i]만큼의 궤적정보를 활용
-
-데이터를 다룰때 모든 데이터를 한군데 모아서 정리한 뒤 활용하는 방식은 데이터가 무겁기 때문에 활용하기 어려운 방식처럼 보임
-
-~~따라서 어차피 시계열 데이터라고 한다면 시계열 묶음은 (collectionName, phoneName)을 하나의 단위로 끊고, 그에 맞는 데이터를 필요할때마다 load하는 방식은 어떨까?~~
-
-PICKLE로 묶어서 사용하면 상대적으로 빠르게 활용 가능해보임()
