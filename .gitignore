@@ -32,6 +32,6 @@
 *.app
 
 # Datas
-*/input
-/GoogleSmartPhone/code/models/*/*_checkpoint
+*/*/input
+Research/GoogleSmartPhone/code/models/*/*_checkpoint
 
