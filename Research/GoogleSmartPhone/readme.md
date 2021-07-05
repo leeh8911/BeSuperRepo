@@ -109,4 +109,7 @@ coordinate frame을 어떻게 가져가야 할까?
 ## 2021-07-05
 
 * train 과정에서 loss의 값이 이상함..
+* angluar data는 특정 값을 기준으로 discrete해지는 경향이 발생함. 이로 인해 불연속적인 특징이 나타나기 때문에 학습에 어려움을 겪는 것 같이 보임. 따라서 angluar data들은 unit vector로 쪼개서 사용 하는 것으로 하면 어떨가 싶음[imu data analysis](https://www.kaggle.com/museas/estimating-the-direction-with-a-magnetic-sensor/notebook)
 
+* GEO 데이터도 받을 수 있는 방법이 있을 까? 추가로 활용 가능하면 좋을 것 같은데[링크](https://plotly.com/python/scattermapbox/)
+* 
