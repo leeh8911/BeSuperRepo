@@ -106,3 +106,7 @@ coordinate frame을 어떻게 가져가야 할까?
 
 * ~~Status 데이터의 경우, one-hot encoding을 통해 변환해주고, cnn block(cnn + batch norm + res + pool)을 통과하거나 transformer를 통과하는 경우에는 inf or nan이 되어버림.~~ 데이터 변환을 잘못해서 그런 것이었음. 데이터 중간에 NaN데이터가 포함됨
 
+## 2021-07-05
+
+* train 과정에서 loss의 값이 이상함..
+

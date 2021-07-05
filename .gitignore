@@ -35,4 +35,7 @@
 */*/input
 Research/GoogleSmartPhone/code/models/*/*_checkpoint
 Who Am I/past
+Research/nuScenes/data
+Research/nuScenes/*.zip
+Research/nuScenes/*.tar
 
