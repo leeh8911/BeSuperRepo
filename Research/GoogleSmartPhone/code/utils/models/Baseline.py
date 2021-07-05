@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 FILE_NAME = __file__.split("/")[-1][:-3]
 
 class Model(nn.Module):
-    def __init__(self, input_size=(100, 3), output_size=(3, 1), loss = None, opt = None, learning_rate = 0.001, save_path=f"./{FILE_NAME}/"):
+    def __init__(self, input_size=(100, 3), output_size=(3, 1), train_params = {"learning_rate":0.001}, save_path=f"./{FILE_NAME}/"):
         super().__init__()
 
         self.input_size = input_size
@@ -21,9 +21,10 @@ class Model(nn.Module):
 
         self.save_path = save_path
 
-        self.learning_rate = learning_rate
-        self.loss = loss
-        self.optim = opt
+        self.train_params = train_params
+        self.learning_rate  = None
+        self.loss           = None
+        self.optim          = None
 
         self.fc_input = nn.Linear(input_size[0] * input_size[1], 128)
         self.fc_output = nn.Linear(128, output_size[0])
@@ -45,7 +46,9 @@ class Model(nn.Module):
         x = self.fc_output(x)
 
         return x
+
     def compile(self):
+
         if self.optim is None:
             self.optim = optim.SGD(self.parameters(), self.learning_rate)
         if self.loss is None:
@@ -64,7 +67,8 @@ class Model(nn.Module):
 
 
 if __name__ == "__main__":
-    model = Model()
-    model.compile()
-    model.save()
+
+    # model = Model()
+    # model.compile()
+    # model.save()
     # torch.save(model.state_dict(), "./temp.pth")
