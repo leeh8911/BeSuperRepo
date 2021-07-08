@@ -112,6 +112,6 @@ coordinate frame을 어떻게 가져가야 할까?
 * angluar data는 특정 값을 기준으로 discrete해지는 경향이 발생함. 이로 인해 불연속적인 특징이 나타나기 때문에 학습에 어려움을 겪는 것 같이 보임. 따라서 angluar data들은 unit vector로 쪼개서 사용 하는 것으로 하면 어떨가 싶음[imu data analysis](https://www.kaggle.com/museas/estimating-the-direction-with-a-magnetic-sensor/notebook)
 * ~~GEO 데이터도 받을 수 있는 방법이 있을 까? 추가로 활용 가능하면 좋을 것 같은데[링크](https://plotly.com/python/scattermapbox/)~~일단 맵 정보를 받을 방법이 요원함..
 
-## 2021-07-07
+## 2021-07-08
 
-* ㅁㄴㅇㄹ
+* DualEncoderAttention.ipynb 에서 memory leak이 발생함, output으로 prediction, label 값을 출력해서 그런 것으로 보임, TRAIN, VALID에서는 total loss, score는 내부적으로 계산하도록 변경 필요. TEST는 현상 유지해도 될듯
