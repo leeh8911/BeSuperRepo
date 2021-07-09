@@ -76,10 +76,12 @@ class CustomNuScenesMap(NuScenesMap):
 
     def get_polygon_bounds(self, layer, token):
 
-        print(layer, token)
         record = self.get(layer, token)
-        nodes = [self.get('node', token) for token in record['exterior_node_tokens']]
-        node_coords = np.array([(node['x'], node['y']) for node in nodes])
+        if record.keys() in 'exterior_node_tokens':
+            nodes = [self.get('node', token) for token in record['exterior_node_tokens']]
+            node_coords = np.array([(node['x'], node['y']) for node in nodes])
+        else:
+            node_coords = np.array([])
 
         return node_coords
 

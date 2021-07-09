@@ -27,7 +27,7 @@ class TrainHandler():
         self.score = score
         pass
 
-    def fit(self, train_loader, valid_loader, nepches, checkpoint_path, ):
+    def fit(self, train_loader, valid_loader, nepoches, checkpoint_path, ):
 
     def train(self, data_loader):
         self.model.train()  # 신경망을 학습 모드로 전환
