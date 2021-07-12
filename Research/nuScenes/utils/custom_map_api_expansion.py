@@ -61,35 +61,44 @@ class CustomNuScenesMap(NuScenesMap):
                                global_coord = True, mode='within'):
         layer_dict = self.get_closest_layers(layers, center_pose['translation'], patch, mode)
         output_list = []
+        append_count = 0
         for layer in layers:
             nodes_list = layer_dict[layer]
             for nodes in nodes_list:
-                nodes = self.nodes_abstraction(nodes)
-
                 if not global_coord:
                     nodes = self.transform_coord(nodes, center_pose)
+                nodes = self.nodes_abstraction(nodes, max_points = max_points)
 
                 struct_dict = {'class': layer, 'nodes': nodes}
                 output_list.append(struct_dict)
+                append_count += 1
+                if append_count == max_objs:
+                    break
+
+            if append_count == max_objs:
+                break
 
         return output_list
 
-    def nodes_abstraction(self, nodes):
-        output = np.zeros((2, 30))
+    def nodes_abstraction(self, nodes, max_points=30):
         length = nodes.shape[0]
         if length > 30:
+            length = 30
             nodes = nodes[:30, :]
-        return nodes.transpose(1, 0)
+
+        nodes = np.concatenate([nodes, np.zeros((30 - length, 2))], axis = 0)
+        return nodes
 
     def transform_coord(self, nodes, coord):
+        nodes = nodes.transpose(1,0)
         nodes = np.concatenate([nodes, np.zeros([1, nodes.shape[1]])], axis=0)
 
         car_from_global = transform_matrix(coord['translation'], Quaternion(coord['rotation']), inverse=True)
 
         nodes = car_from_global.dot(np.vstack((nodes, np.ones(nodes.shape[1]))))[:3, :]
-        output = nodes[:2, :]
-
-        return output
+        nodes = nodes[:2, :]
+        nodes = nodes.transpose(1,0)
+        return nodes
 
     def get_polygon_bounds(self, layer, token):
 

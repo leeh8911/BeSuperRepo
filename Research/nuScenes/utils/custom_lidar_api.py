@@ -20,7 +20,7 @@ class CustomLidarApi():
         self.token = None
         self.data = None
 
-    def get_lidar_from_keyframe(self, token, car_coord = False):
+    def get_lidar_from_keyframe(self, token, max_points = 35000, car_coord = False):
         pc = np.zeros([4, 35000])
 
         if self.token == token:
@@ -38,6 +38,7 @@ class CustomLidarApi():
             tf = transform_matrix(cs['translation'], Quaternion(cs['rotation']), inverse=True)
             pc.transform(tf)
 
+        pc = self.abstract_point_cloud(pc, max_points)
         return pc
 
     def get_egopose_from_keyframe(self, token):
@@ -49,6 +50,15 @@ class CustomLidarApi():
             self.data = self.nusc.get('sample_data', sample['data']['LIDAR_TOP'])
 
         return self.nusc.get("ego_pose", self.data['ego_pose_token'])
+
+    def abstract_point_cloud(self, pc, max_points):
+        point_shape = pc.points.shape
+        if point_shape[1] > max_points:
+            index = np.random.choice(point_shape[1], max_points, replace = False)
+            pc.points = pc.points[:, index]
+        else:
+            pc.points = np.concatenate([pc.points, np.zeros((4, max_points - point_shape[1]))], axis = 1)
+        return pc
 
 
 if __name__ == "__main__":
