@@ -15,6 +15,8 @@ from pyquaternion import Quaternion
 
 import numpy as np
 
+from operator import itemgetter
+
 map_sizes = {'singapore-onenorth': [1585.6, 2025.0],
              'singapore-hollandvillage': [2808.3, 2922.9],
              'singapore-queenstown': [3228.6, 3687.1],
@@ -32,8 +34,23 @@ class CustomNuScenesMap(NuScenesMap):
     def get_size(self):
         return map_sizes[self.map_name]
 
-    def get_closest_layers(self, layers, center_pose, patch=[200, 200], mode='within'):
-        my_patch = [center_pose[0] - patch[0] / 2, center_pose[1] - patch[1] / 2, center_pose[0] + patch[0] / 2, center_pose[1] + patch[1] / 2]
+    def get_closest_layers(self, layers, center_pose, patch=[-1, -1], mode='within'):
+        my_patch = []
+        if patch[0] == -1:
+            x_min = 0
+            x_max = map_sizes[self.map_name][0]
+        else:
+            x_min = center_pose[0] - patch[0]/2
+            x_max = center_pose[0] + patch[0]/2
+
+        if patch[1] == -1:
+            y_min = 0
+            y_max = map_sizes[self.map_name][1]
+        else:
+            y_min = center_pose[1] - patch[1] / 2
+            y_max = center_pose[1] + patch[1] / 2
+
+        my_patch = [x_min, y_min, x_max, y_max]
         records = self.get_records_in_patch(my_patch, layers, mode='within')
         output = dict()
 
@@ -57,7 +74,7 @@ class CustomNuScenesMap(NuScenesMap):
 
         return output
 
-    def get_closest_structures(self, layers, center_pose, max_objs=64, max_points=30, patch=[200, 200],
+    def get_closest_structures(self, layers, center_pose, max_objs=64, max_points=30, patch=[-1, -1],
                                global_coord = True, mode='within'):
         layer_dict = self.get_closest_layers(layers, center_pose['translation'], patch, mode)
         output_list = []
@@ -65,18 +82,20 @@ class CustomNuScenesMap(NuScenesMap):
         for layer in layers:
             nodes_list = layer_dict[layer]
             for nodes in nodes_list:
+                if nodes.shape[0] == 0:
+                    continue
                 if not global_coord:
                     nodes = self.transform_coord(nodes, center_pose)
                 nodes = self.nodes_abstraction(nodes, max_points = max_points)
+                dist_array = np.sqrt((nodes * nodes).sum(axis = 1))
+                min_dist = dist_array[dist_array > 0].min()
 
-                struct_dict = {'class': layer, 'nodes': nodes}
+                struct_dict = {'class': layer, 'nodes': nodes, 'min_dist': min_dist}
+
                 output_list.append(struct_dict)
-                append_count += 1
-                if append_count == max_objs:
-                    break
 
-            if append_count == max_objs:
-                break
+        output_list = sorted(output_list, key = itemgetter('min_dist'), reverse = False)
+        output_list = output_list[:max_objs]
 
         return output_list
 
@@ -121,9 +140,11 @@ class CustomNuScenesMap(NuScenesMap):
 
 
 if __name__ == "__main__":
-    map_api = CustomNuScenesMap('../data/sets/nuscenes', 'singapore-onenorth')
-    structures = map_api.get_closest_structures(['road_divider', 'road_block', 'walkway', 'traffic_light'], [600, 1000])
-    layers = map_api.get_closest_layers(['road_divider', 'road_block', 'walkway', 'traffic_light'], [600, 1000])
+    map_api = CustomNuScenesMap('../data/sets/nuscenes', 'boston-seaport')
+    pose=dict([])
 
-    print(structures)
-    print(layers)
+    pose['translation'] = [600.1202137947669, 1647.490776275174, 0.0]
+    pose['rotation'] = [-0.968669701688471, -0.004043399262151301, -0.007666594265959211, 0.24820129589817977]
+    structures = map_api.get_closest_structures(map_api.non_geometric_layers, pose, global_coord=False, max_objs=2048, max_points=1024, patch=[-1, -1], mode = 'within')
+
+    # print(structures[0])

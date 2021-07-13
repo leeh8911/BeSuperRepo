@@ -35,7 +35,17 @@ class CustomLidarApi():
 
         if car_coord:
             cs = self.nusc.get('calibrated_sensor', self.data['calibrated_sensor_token'])
-            tf = transform_matrix(cs['translation'], Quaternion(cs['rotation']), inverse=True)
+            ref_to_ego = transform_matrix(cs['translation'], Quaternion(cs['rotation']), inverse=False)
+
+            pose = self.get_egopose_from_keyframe(token)
+            ego_yaw = Quaternion(pose['rotation']).yaw_pitch_roll[0]
+            rotation_vehicle_flat_from_vehicle = np.dot(
+                    Quaternion(scalar=np.cos(ego_yaw / 2), vector=[0, 0, np.sin(ego_yaw / 2)]).rotation_matrix,
+                    Quaternion(pose['rotation']).inverse.rotation_matrix)
+            vehicle_flat_from_vehicle = np.eye(4)
+            vehicle_flat_from_vehicle[:3, :3] = rotation_vehicle_flat_from_vehicle
+            viewpoint = np.dot(vehicle_flat_from_vehicle, ref_to_ego)
+            tf = np.dot(vehicle_flat_from_vehicle, ref_to_ego)
             pc.transform(tf)
 
         pc = self.abstract_point_cloud(pc, max_points)
