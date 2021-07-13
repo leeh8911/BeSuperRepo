@@ -57,17 +57,11 @@ class CustomNuScenesMap(NuScenesMap):
         for layer in layers:
             if layer in self.non_geometric_polygon_layers:
                 tokens = records[layer]
-                layer_coords = []
-                for token in tokens:
-                    node_coords = self.get_polygon_bounds(layer, token)
-                    layer_coords.append(node_coords)
+                layer_coords = list(map(lambda x: self.get_polygon_bounds(layer, x), tokens))
 
             elif layer in self.non_geometric_line_layers:
                 tokens = records[layer]
-                layer_coords = []
-                for token in tokens:
-                    node_coords = self.get_line_bounds(layer, token)
-                    layer_coords.append(node_coords)
+                layer_coords = list(map(lambda x: self.get_line_bounds(layer, x), tokens))
             else:
                 continue
             output[layer] = layer_coords
@@ -81,8 +75,9 @@ class CustomNuScenesMap(NuScenesMap):
         append_count = 0
         for layer in layers:
             nodes_list = layer_dict[layer]
+            nodes_list = list(map(lambda x: x if x.shape[0] > 0 else [], nodes_list))
             for nodes in nodes_list:
-                if nodes.shape[0] == 0:
+                if nodes.shape[0] == 0:`1
                     continue
                 if not global_coord:
                     nodes = self.transform_coord(nodes, center_pose)
