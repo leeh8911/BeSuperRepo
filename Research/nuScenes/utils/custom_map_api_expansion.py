@@ -36,76 +36,64 @@ class CustomNuScenesMap(NuScenesMap):
     def get_size(self):
         return map_sizes[self.map_name]
 
-    def get_closest_layers(self, layers, center_pose, patch=[-1, -1], mode='within'):
+    def get_closest_structures(self, layers, center_pose, max_objs=64, max_points=30, patch=[-1, -1],
+                               global_coord=True, mode='within'):
         if patch[0] == -1:
             x_min = 0
             x_max = map_sizes[self.map_name][0]
         else:
-            x_min = center_pose[0] - patch[0]/2
-            x_max = center_pose[0] + patch[0]/2
+            x_min = center_pose['translation'][0] - patch[0] / 2
+            x_max = center_pose['translation'][0] + patch[0] / 2
 
         if patch[1] == -1:
             y_min = 0
             y_max = map_sizes[self.map_name][1]
         else:
-            y_min = center_pose[1] - patch[1] / 2
-            y_max = center_pose[1] + patch[1] / 2
+            y_min = center_pose['translation'][1] - patch[1] / 2
+            y_max = center_pose['translation'][1] + patch[1] / 2
 
-        rectangular_patch = box(x_min, y_min, x_max, y_max)
         my_patch = [x_min, y_min, x_max, y_max]
 
         if layers is None:
             layers = self.non_geometric_layers
 
-        records = dict()
-
+        output = list()
         for layer in layers:
-            record_list = getattr(self, layer)
-            token_list = list(map(lambda x: x['token'], record_list))
-            token_list = list(filter(lambda x: self.is_record_in_patch(layer, x, my_patch, mode), token_list))
-
-            records.update({layer: token_list})
-
-        output = dict()
-        for layer in layers:
+            token_list = list(map(lambda x: x['token'], getattr(self, layer)))
             if layer in self.non_geometric_polygon_layers:
-                tokens = records[layer]
-                layer_coords = list(map(lambda x: self.get_polygon_bounds(layer, x), tokens))
+                layer_coords = list(map(lambda x: self.get_polygon_bounds(layer, x), token_list))
 
             elif layer in self.non_geometric_line_layers:
-                tokens = records[layer]
-                layer_coords = list(map(lambda x: self.get_line_bounds(layer, x), tokens))
+                layer_coords = list(map(lambda x: self.get_line_bounds(layer, x), token_list))
 
-            else:
-                continue
-            output[layer] = layer_coords
-
-        return output
-
-    def get_closest_structures(self, layers, center_pose, max_objs=64, max_points=30, patch=[-1, -1],
-                               global_coord = True, mode='within'):
-        layer_dict = self.get_closest_layers(layers, center_pose['translation'], patch, mode)
-        output_list = []
-        append_count = 0
-        for layer in layers:
-            nodes_list = layer_dict[layer]
-            nodes_list = list(filter(lambda x: x.shape[0] > 0, nodes_list))
-            nodes_list = list(map(lambda x: self.nodes_abstraction(x, max_points=max_points), nodes_list))
+            layer_coords = list(filter(lambda x: len(x) > 0, layer_coords))
+            layer_coords = list(filter(lambda x: self.intersect(x, my_patch), layer_coords))
+            layer_coords = list(map(lambda x: self.nodes_abstraction(x, max_points=max_points), layer_coords))
             if not global_coord:
-                nodes_list = list(map(lambda x: self.transform_coord(x, center_pose), nodes_list))
+                layer_coords = list(map(lambda x: self.transform_coord(x, center_pose), layer_coords))
 
-            for nodes in nodes_list:
-                dist_array = np.sqrt((nodes * nodes).sum(axis=1))
-                min_dist = dist_array[dist_array > 0].min()
+            output += list(map(lambda x: {"layer": layer,
+                                          "nodes": x,
+                                          "min_dist": self.distance_from_ego(x, center_pose['translation'][:2])
+                                          },
+                               layer_coords
+                               )
+                           )
 
-                struct_dict = {'class': layer, 'nodes': nodes, 'min_dist': min_dist}
+        output = sorted(output, key=itemgetter('min_dist'), reverse=False)
+        return output[:max_objs]
 
-                output_list.append(struct_dict)
+    def intersect(self, node_coords, box_coords):
+        x_min, y_min, x_max, y_max = box_coords
+        cond_x = np.logical_and(node_coords[:, 0] < x_max, node_coords[:, 0] > x_min)
+        cond_y = np.logical_and(node_coords[:, 1] < y_max, node_coords[:, 1] > y_min)
+        cond = np.logical_and(cond_x, cond_y)
+        return np.any(cond)
 
-        output_list = sorted(output_list, key = itemgetter('min_dist'), reverse = False)
-        output_list = output_list[:max_objs]
-
-        return output_list
+    def distance_from_ego(self, nodes, ego):
+        diff_nodes = nodes - ego
+        dist_array = np.sqrt((diff_nodes * diff_nodes).sum(axis=1))
+        return dist_array[dist_array > 0].min()
 
     def nodes_abstraction(self, nodes, max_points=30):
         length = nodes.shape[0]
@@ -128,9 +116,9 @@ class CustomNuScenesMap(NuScenesMap):
 
         temp = car_from_global.dot(np.vstack((temp, np.ones(temp.shape[1]))))[:3, :]
         temp = temp[:2, :]
-        temp = temp.transpose(1,0)
+        temp = temp.transpose(1, 0)
 
-        nodes[slicer,:] = temp
+        nodes[slicer, :] = temp
         return nodes
 
     def get_polygon_bounds(self, layer, token):
@@ -155,10 +143,11 @@ class CustomNuScenesMap(NuScenesMap):
 
 if __name__ == "__main__":
     map_api = CustomNuScenesMap('../data/sets/nuscenes', 'boston-seaport')
-    pose=dict([])
+    pose = dict([])
 
     pose['translation'] = [600.1202137947669, 1647.490776275174, 0.0]
     pose['rotation'] = [-0.968669701688471, -0.004043399262151301, -0.007666594265959211, 0.24820129589817977]
-    structures = map_api.get_closest_structures(map_api.non_geometric_layers, pose, global_coord=False, max_objs=2048, max_points=1024, patch=[200, 200], mode = 'within')
+    structures = map_api.get_closest_structures(map_api.non_geometric_layers, pose, global_coord=False, max_objs=2048,
+                                                max_points=1024, patch=[200, 200], mode='within')
 
     print(structures[0])
