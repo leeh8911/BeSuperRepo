@@ -69,8 +69,6 @@ class CustomNuScenesMap(NuScenesMap):
             layer_coords = list(filter(lambda x: len(x) > 0, layer_coords))
             layer_coords = list(filter(lambda x: self.intersect(x, my_patch), layer_coords))
             layer_coords = list(map(lambda x: self.nodes_abstraction(x, max_points=max_points), layer_coords))
-            if not global_coord:
-                layer_coords = list(map(lambda x: self.transform_coord(x, center_pose), layer_coords))
 
             output += list(map(lambda x: {"layer": layer,
                                           "nodes": x,
@@ -79,9 +77,18 @@ class CustomNuScenesMap(NuScenesMap):
                                layer_coords
                                )
                            )
-
         output = sorted(output, key=itemgetter('min_dist'), reverse=False)
-        return output[:max_objs]
+        output = output[:max_objs]
+        if not global_coord:
+            output = list(map(lambda x: {"layer": x['layer'],
+                                          "nodes": self.transform_coord(x['nodes'], center_pose),
+                                          "min_dist": x['min_dist']
+                                          },
+                               output
+                               ))
+
+
+        return output
 
     def intersect(self, node_coords, box_coords):
         x_min, y_min, x_max, y_max = box_coords
