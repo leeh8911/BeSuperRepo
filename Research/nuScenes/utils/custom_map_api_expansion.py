@@ -13,6 +13,8 @@ from nuscenes.map_expansion.bitmap import BitMap
 from nuscenes.utils.geometry_utils import view_points, transform_matrix
 from pyquaternion import Quaternion
 
+from shapely.geometry import Polygon, MultiPolygon, LineString, Point, box
+
 import numpy as np
 
 from operator import itemgetter
@@ -35,7 +37,6 @@ class CustomNuScenesMap(NuScenesMap):
         return map_sizes[self.map_name]
 
     def get_closest_layers(self, layers, center_pose, patch=[-1, -1], mode='within'):
-        my_patch = []
         if patch[0] == -1:
             x_min = 0
             x_max = map_sizes[self.map_name][0]
@@ -50,10 +51,22 @@ class CustomNuScenesMap(NuScenesMap):
             y_min = center_pose[1] - patch[1] / 2
             y_max = center_pose[1] + patch[1] / 2
 
+        rectangular_patch = box(x_min, y_min, x_max, y_max)
         my_patch = [x_min, y_min, x_max, y_max]
-        records = self.get_records_in_patch(my_patch, layers, mode='within')
-        output = dict()
 
+        if layers is None:
+            layers = self.non_geometric_layers
+
+        records = dict()
+
+        for layer in layers:
+            record_list = getattr(self, layer)
+            token_list = list(map(lambda x: x['token'], record_list))
+            token_list = list(filter(lambda x: self.is_record_in_patch(layer, x, my_patch, mode), token_list))
+
+            records.update({layer: token_list})
+
+        output = dict()
         for layer in layers:
             if layer in self.non_geometric_polygon_layers:
                 tokens = records[layer]
@@ -62,6 +75,7 @@ class CustomNuScenesMap(NuScenesMap):
             elif layer in self.non_geometric_line_layers:
                 tokens = records[layer]
                 layer_coords = list(map(lambda x: self.get_line_bounds(layer, x), tokens))
+
             else:
                 continue
             output[layer] = layer_coords
@@ -75,14 +89,13 @@ class CustomNuScenesMap(NuScenesMap):
         append_count = 0
         for layer in layers:
             nodes_list = layer_dict[layer]
-            nodes_list = list(map(lambda x: x if x.shape[0] > 0 else [], nodes_list))
+            nodes_list = list(filter(lambda x: x.shape[0] > 0, nodes_list))
+            nodes_list = list(map(lambda x: self.nodes_abstraction(x, max_points=max_points), nodes_list))
+            if not global_coord:
+                nodes_list = list(map(lambda x: self.transform_coord(x, center_pose), nodes_list))
+
             for nodes in nodes_list:
-                if nodes.shape[0] == 0:`1
-                    continue
-                if not global_coord:
-                    nodes = self.transform_coord(nodes, center_pose)
-                nodes = self.nodes_abstraction(nodes, max_points = max_points)
-                dist_array = np.sqrt((nodes * nodes).sum(axis = 1))
+                dist_array = np.sqrt((nodes * nodes).sum(axis=1))
                 min_dist = dist_array[dist_array > 0].min()
 
                 struct_dict = {'class': layer, 'nodes': nodes, 'min_dist': min_dist}
@@ -96,22 +109,28 @@ class CustomNuScenesMap(NuScenesMap):
 
     def nodes_abstraction(self, nodes, max_points=30):
         length = nodes.shape[0]
+        output = np.zeros((30, 2))
         if length > 30:
             length = 30
             nodes = nodes[:30, :]
 
-        nodes = np.concatenate([nodes, np.zeros((30 - length, 2))], axis = 0)
-        return nodes
+        output[:length, :] = nodes
+        return output
 
     def transform_coord(self, nodes, coord):
-        nodes = nodes.transpose(1,0)
-        nodes = np.concatenate([nodes, np.zeros([1, nodes.shape[1]])], axis=0)
+        slicer = (nodes[:, 0] != 0) | (nodes[:, 1] != 0)
+        temp = nodes[slicer, :]
+
+        temp = temp.transpose(1, 0)
+        temp = np.concatenate([temp, np.zeros([1, temp.shape[1]])], axis=0)
 
         car_from_global = transform_matrix(coord['translation'], Quaternion(coord['rotation']), inverse=True)
 
-        nodes = car_from_global.dot(np.vstack((nodes, np.ones(nodes.shape[1]))))[:3, :]
-        nodes = nodes[:2, :]
-        nodes = nodes.transpose(1,0)
+        temp = car_from_global.dot(np.vstack((temp, np.ones(temp.shape[1]))))[:3, :]
+        temp = temp[:2, :]
+        temp = temp.transpose(1,0)
+
+        nodes[slicer,:] = temp
         return nodes
 
     def get_polygon_bounds(self, layer, token):
@@ -140,6 +159,6 @@ if __name__ == "__main__":
 
     pose['translation'] = [600.1202137947669, 1647.490776275174, 0.0]
     pose['rotation'] = [-0.968669701688471, -0.004043399262151301, -0.007666594265959211, 0.24820129589817977]
-    structures = map_api.get_closest_structures(map_api.non_geometric_layers, pose, global_coord=False, max_objs=2048, max_points=1024, patch=[-1, -1], mode = 'within')
+    structures = map_api.get_closest_structures(map_api.non_geometric_layers, pose, global_coord=False, max_objs=2048, max_points=1024, patch=[200, 200], mode = 'within')
 
-    # print(structures[0])
+    print(structures[0])

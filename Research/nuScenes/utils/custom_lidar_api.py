@@ -21,8 +21,6 @@ class CustomLidarApi():
         self.data = None
 
     def get_lidar_from_keyframe(self, token, max_points = 35000, car_coord = False):
-        pc = np.zeros([4, 35000])
-
         if self.token == token:
             pass
         else:
@@ -32,6 +30,7 @@ class CustomLidarApi():
         pcl_path = os.path.join(self.nusc.dataroot, self.data['filename'])
 
         pc = LidarPointCloud.from_file(pcl_path)
+        pc = self.abstract_point_cloud(pc, max_points)
 
         if car_coord:
             cs = self.nusc.get('calibrated_sensor', self.data['calibrated_sensor_token'])
@@ -44,11 +43,9 @@ class CustomLidarApi():
                     Quaternion(pose['rotation']).inverse.rotation_matrix)
             vehicle_flat_from_vehicle = np.eye(4)
             vehicle_flat_from_vehicle[:3, :3] = rotation_vehicle_flat_from_vehicle
-            viewpoint = np.dot(vehicle_flat_from_vehicle, ref_to_ego)
             tf = np.dot(vehicle_flat_from_vehicle, ref_to_ego)
             pc.transform(tf)
 
-        pc = self.abstract_point_cloud(pc, max_points)
         return pc
 
     def get_egopose_from_keyframe(self, token):
@@ -62,13 +59,14 @@ class CustomLidarApi():
         return self.nusc.get("ego_pose", self.data['ego_pose_token'])
 
     def abstract_point_cloud(self, pc, max_points):
-        point_shape = pc.points.shape
+        output = pc
+        point_shape = output.points.shape
         if point_shape[1] > max_points:
             index = np.random.choice(point_shape[1], max_points, replace = False)
-            pc.points = pc.points[:, index]
+            output.points = output.points[:, index]
         else:
-            pc.points = np.concatenate([pc.points, np.zeros((4, max_points - point_shape[1]))], axis = 1)
-        return pc
+            output.points = np.concatenate([output.points, np.zeros((4, max_points - point_shape[1]))], axis = 1)
+        return output
 
 
 if __name__ == "__main__":
