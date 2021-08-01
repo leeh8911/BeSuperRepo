@@ -6,6 +6,10 @@
 
 # Log
 
+## 08-01
+
+각 데이터 scan 정보마다의 view가 모두 다름(top view, side view, ...) 3차원 정보의 데이터를 point cloud로 변환한 다음에, point net의 접근 방법처럼 써보는 것은 어떨까 싶음.
+
 ## 07-28
 
 train data에 대한 분석
