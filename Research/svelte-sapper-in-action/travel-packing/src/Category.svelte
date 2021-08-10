@@ -1,6 +1,9 @@
 <script>
     import Item from './Item.svelte';
     import {getGuid, blurOnKey, sortOnName} from './util';
+    import {createEventDispatcher} from 'svelte';
+
+    const dispatch = createEventDispatcher();
 
     export let categories;
     export let category;
@@ -16,6 +19,12 @@
     $: total = items.length;
     $: status = `${remaining} of ${total} remaining`;
     $: itemsToShow = sortOnName(items.filter(i => shouldShow(show, i)));
+
+    function deleteItem(item){
+        delete category.items[item.id];
+        category = category;
+        dispatch('persist')
+    }
 
     function addItem(){
         const duplicate = Object.values(categories).some(cat =>
@@ -33,6 +42,7 @@
         items[id] = {id, name: itemName, packd: false};
         category.items = items;
         itemName = '';
+        dispatch('persist')
     }
 
     function shouldShow(show, item) {
@@ -66,7 +76,8 @@
 
     <ul>
         {#each itemsToShow as item (item.id)}
-            <Item bind:item/>
+            <Item bind:item on:delete={()=> deleteItem(item)}/>
+            <button class="icon" on:click={() => dispatch('delete')}> &#x1F5D1;</button>
         {:else}
             <div>This category does not contain any items yet.</div>
         {/each}

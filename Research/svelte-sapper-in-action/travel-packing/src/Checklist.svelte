@@ -1,6 +1,9 @@
 <script>
     import Category from './Category.svelte';
     import {getGuid, sortOnName} from './util';
+    import {createEventDispatcher} from 'svelte';
+
+    const dispatch = createEventDispatcher();
 
     let categoryArray = [];
     let categories = {};
@@ -9,6 +12,11 @@
     let show = 'all';
 
     $: categoryArray = sortOnName(Object.values(categories));
+
+    function deleteCategory(category){
+        delete categories[category.id];
+        categories = categories;
+    }
 
     function addCategory() {
         const duplicate = Object.values(categories).some(
@@ -34,6 +42,21 @@
         }
         categories = categories;
     }
+
+    restore();
+
+    $: if (categories) persist();
+
+    function persist() {
+        localStorage.setItem('travel-packing', JSON.stringify(categories));
+    }
+
+    function restore() {
+        const text = localStorage.getItem('travel-packing');
+        if (text && text !== '{}') {
+            categories = JSON.parse(text);
+        }
+    }
 </script>
 
 
@@ -45,10 +68,10 @@
                 <input bind:value={categoryName}>
             </label>
             <button disabled={!categoryName}>Add Category</button>
-            <button class="logout-btn">
-                Log Out
-            </button>
         </form>
+        <button class="logout-btn" on:click={() => dispatch('logout')}>
+            Log Out
+        </button>
         <p>
             Suggested categories include Backpack, Clothes, 
             <br />
@@ -76,7 +99,7 @@
 
     <div class='categories'>
         {#each categoryArray as category (category.id)}
-            <Category bind:category {categories} {show} />
+            <Category bind:category {categories} {show} on:delete={() => deleteCategory(category)} on:persist={persist}/>
         {/each}
     </div>
 </section>
