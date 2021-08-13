@@ -38,4 +38,5 @@ Who Am I/past
 Research/nuScenes/data
 Research/nuScenes/*.zip
 Research/nuScenes/*.tar
+*.pkl
 
