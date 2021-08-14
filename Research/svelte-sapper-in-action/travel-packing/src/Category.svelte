@@ -2,6 +2,8 @@
     import Item from './Item.svelte';
     import {getGuid, blurOnKey, sortOnName} from './util';
     import {createEventDispatcher} from 'svelte';
+    import Dialog from './Dialog.svelte';
+    
 
     const dispatch = createEventDispatcher();
 
@@ -9,6 +11,7 @@
     export let category;
     export let show;
 
+    let dialog = null;
     let editing = false;
     let itemName = '';
     let items = [];
@@ -33,7 +36,7 @@
 
         if(duplicate){
             message = `The item "${itemName}" already exist.`;
-            alert(message);
+            dialog.showModal();
             return;
         }
 
@@ -82,6 +85,10 @@
             <div>This category does not contain any items yet.</div>
         {/each}
     </ul>
+
+    <Dialog title="Category" bind:dialog>
+        <div>{message}</div>
+    </Dialog>
 </section>
 
 <style>
