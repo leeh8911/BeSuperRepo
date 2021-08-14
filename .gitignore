@@ -38,5 +38,6 @@ Who Am I/past
 Research/nuScenes/data
 Research/nuScenes/*.zip
 Research/nuScenes/*.tar
+Research/rsna-miccai-brain-tumor-radiogenomic-classification/models/
 *.pkl
 
