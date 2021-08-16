@@ -5,6 +5,8 @@
     const dispatch = createEventDispatcher();
 
     export let item;
+    export let categoryId;
+    export let dnd;
 
     let editing = false;
 </script>
@@ -19,7 +21,11 @@
         on:keydown={blurOnKey}
         type="text"/>
     {:else}
-        <span class="packed-{item.packed}" on:click={() => (editing = true)}>
+        <span 
+        class="packed-{item.packed}" 
+        on:click={() => (editing = true)} 
+        draggable='true' 
+        on:dragstart={event=>dnd.drag(event, categoryId, item.id)}>
             {item.name}
         </span>
     {/if}

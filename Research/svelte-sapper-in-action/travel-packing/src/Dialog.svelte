@@ -2,7 +2,7 @@
     import dialogPolyfill from 'dialog-polyfill';
     import {createEventDispatcher, onMount} from 'svelte';
 
-    export let canClost = true;
+    export let canClose = true;
     export let className = '';
     export let dialog = null;
     export let icon = undefined;

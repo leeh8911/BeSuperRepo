@@ -4,18 +4,19 @@
     import {createEventDispatcher} from 'svelte';
     import Dialog from './Dialog.svelte';
     
-
     const dispatch = createEventDispatcher();
 
     export let categories;
     export let category;
     export let show;
+    export let dnd;
 
     let dialog = null;
     let editing = false;
     let itemName = '';
     let items = [];
     let message = '';
+    let hovering = false;
 
     $: items = Object.values(category.items);
     $: remaining = items.filter(item=> !item.packed).length;
@@ -57,7 +58,19 @@
     }
 </script>
 
-<section>
+<section
+class:hover={hovering}
+on:dragenter={() => (hovering = true)}
+on:dragleave={event=> {
+    const {localName} = event.target;
+    if (localName === 'section') hovering = false;
+}}
+on:drop|preventDefault={event => {
+    dnd.drop(event, category.id);
+    hovering = false;
+}}
+on:dragover|preventDefault>
+
     <h3>
         {#if editing}
             <input
@@ -79,11 +92,11 @@
 
     <ul>
         {#each itemsToShow as item (item.id)}
-            <Item bind:item on:delete={()=> deleteItem(item)}/>
-            <button class="icon" on:click={() => dispatch('delete')}> &#x1F5D1;</button>
+            <Item bind:item on:delete={()=> deleteItem(item)} categoryId={category.id} {dnd}/>
         {:else}
             <div>This category does not contain any items yet.</div>
         {/each}
+        <button class="icon" on:click={() => dispatch('delete')}> &#x1F5D1;</button>
     </ul>
 
     <Dialog title="Category" bind:dialog>
@@ -129,6 +142,9 @@
         margin: 0 15px;
     }
 
+    .hover {
+        border-color: orange;
+    }
     ul {
         list-style: none;
         margin: 0;
